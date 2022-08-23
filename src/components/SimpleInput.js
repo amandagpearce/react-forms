@@ -1,47 +1,36 @@
-import { useState } from "react";
+
+import useInput from "../hooks/use-input";
 
 const SimpleInput = (props) => {
-  // get input value with usestate
-  // if you need to reset, usestate works ref does not. 
-  const [enteredName, setEnteredName] = useState('');
 
-  // basic validation states
-  const [enteredNameTouched, setEnteredNameTouched] = useState(false);
-
-  const enteredNameIsValid = enteredName.trim() !== '';
-  const nameInputIsInvalid = !enteredNameIsValid && enteredNameTouched;
+  const { value: enteredName,  // obj desctructuring to extract values from the object returned in the hook
+          hasError: nameInputHasError, // ': enteredName' and ': nameInputHasError are ALIASES 
+          isValid: enteredNameIsValid,
+          valueChangeHandler: nameChangedHandler,
+          inputBlurHandler: nameBlurHandler,
+          reset: resetNameInput
+        } = useInput(value => value.trim() !== ''); // value => value.trim() !== '' is executed in the use-input hook when we call >> validateValue(enteredValue)
+            // the *value* here is the enteredValue of the hook  (passing a function as a value to another function)
   
-
-  const nameInputChangeHandler = (event) => {
-    setEnteredName(event.target.value); // the state is being updated here >>> but
-  }
-
   const formSubmissionHandler = event => {
     event.preventDefault();
-    setEnteredNameTouched(true);
 
     if (!enteredNameIsValid) {
       return;
     }
 
     // cleaning up the field
-    setEnteredName('');
-    setEnteredNameTouched(false);
+    resetNameInput();
   }
-
-  const nameInputBlurHandler = (event) => {
-    setEnteredNameTouched(true);
-  }
-
   
-  const nameInputClasses = nameInputIsInvalid ? 'form-control invalid' : 'form-control';
+  const nameInputClasses = nameInputHasError ? 'form-control invalid' : 'form-control';
 
   return (
     <form onSubmit={formSubmissionHandler}>
       <div className={nameInputClasses}>
         <label htmlFor='name'>Your Name</label>
-        <input type='text' id='name' onBlur={nameInputBlurHandler} onChange={nameInputChangeHandler} value={enteredName} />
-        {nameInputIsInvalid && <p className="error-text">Name cannot be empty duh</p>}
+        <input type='text' id='name' onBlur={nameBlurHandler} onChange={nameChangedHandler} value={enteredName} />
+        {nameInputHasError && <p className="error-text">Name cannot be empty duh</p>}
       </div>
       <div className="form-actions">
         <button>Submit</button>
